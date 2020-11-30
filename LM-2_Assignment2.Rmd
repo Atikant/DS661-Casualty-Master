@@ -1,0 +1,283 @@
+---
+title: "LM-2_Assignment2"
+author: "Atikant Negi(19253717)"
+date: "25/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Question 1
+### $1(\alpha)$
+
+
+Let Y be the amount of dirt removed from the laundary. A be the temperature with 3 levels ("cold","warm","hot").
+
+B be the Brand of the detergent with 2 levels ("super" , "Beast"). The response $Y_{ijk}$ is the $k_{th}$ observation  in the cell(i,j) where i=1,2,3 and j=1,2. This is represented int the form 
+
+$Y_{ijk}$= $\mu$ + $\alpha_i$ +$\beta_j$ + $\gamma_{ij}$ + $\epsilon_{ijk}$
+
+
+where:
+
+
+$\mu$ = overall mean.
+
+
+$\alpha_i$ = addition effect of the $i_{th}$ level of factor A.
+
+
+$\beta_j$ = addition effect of the $j_{th}$ level of factor B.
+
+
+$\gamma_{ij}$ = interaction effect of the $i_{th}$ level of factor A and $j_{th}$ level of factor B.
+
+
+$\epsilon_{ijk}$ = noise in the model ~N(0,$\sigma^{2}$) are independent under the constraints.
+
+$\sum_{i = 1}^{3} \alpha_i$=0  , $\sum_{j = 1}^{2} \beta_i$=0 ,  $\sum_{i = 1}^{3} \gamma_i$=0  for j=1,2  ,   $\sum_{j = 1}^{2} \gamma_j$=0 for i=1,2,3. 
+
+
+### data-Setup
+```{r}
+Brand=factor(rep(c("Super","Beast"),each=12))
+Temperature=factor(rep(c("Cold","Warm","Hot"),each=4,times=2))
+Dirt=c(4,5,4,5,7,9,8,12,10,12,11,11,6,6,4,4,13,10,10,11,12,12,11,13)
+data1=data.frame(Dirt,Brand,Temperature)
+```
+
+
+### $1(\beta)$
+```{r}
+interaction.plot(Temperature,Brand,Dirt)
+interaction.plot(Brand,Temperature,Dirt)
+```
+
+
+As the lines are almost parallel to each other we can say that there is no interaction between brand and Temperature.
+
+
+
+
+
+### $1(\gamma)$
+```{r}
+aov_test_detergent<-aov(Dirt~Temperature*Brand,data=data1)
+summary(aov_test_detergent)
+```
+
+
+As p values for interaction term is 0.4983  which is more than .05 hence we fail to reject the null hypothesis.Thus we can say that there is indeed no interaction between temperature and Brand in the model. 
+
+
+
+
+### $1(\delta)$
+```{r}
+aov_test_detergent<-aov(Dirt~Temperature+Brand,data=data1)
+summary(aov_test_detergent)
+```
+Looking at the p -values we confirm that  there is Temperature and brand effect in the model.Both the Brand's and Temperature's p-values are less for significance level $\alpha$=0.05. Hence we can reject the null hypothesis and state that both brand and temperature are significant.
+
+
+The reduced model equation will be $Y_{ijk}$= $\mu$ + $\alpha_i$ +$\beta_j$ +  $\epsilon_{ijk}$
+
+
+where:
+
+
+$\mu$ = overall mean.
+
+
+$\alpha_i$ = addition effect of the $i_{th}$ level of factor A(Temperature).
+
+
+$\beta_j$ = addition effect of the $j_{th}$ level of factor B(Brand).
+
+
+$\epsilon_{ijk}$ = noise in the model ~N(0,$\sigma^{2}$) are independent .
+
+
+
+
+### $1(\varepsilon)$
+
+
+The p-values for temperature in both the models, with interaction effect(8.05e-09) and without interaction effect (1.99e-09) are very small thus we can reject null hypothesis and state that $\alpha_i$ isn't zero and hence temperature is a significant explanatory variable.
+
+
+### $1(\zeta)$
+## i) significance level $\alpha$=.05 
+For both  model with interaction and without interaction terms the p-value is ~0.03  which is less than .05. Thus we can reject null hypothesis that $\beta_j$ isn't zero and hence Brand effect is there in the model with significance level $\alpha$=.05.
+
+
+## ii) significance level $\alpha$=.01
+For both  model with interaction and without interaction terms the p-value is ~0.03  which is greater than .01. Thus we fail to reject null hypothesis that $\beta_j$ =0 and hence Brand effect isn't present in the model with significance level $\alpha$=.01.
+
+=====================================================================================================================================
+
+
+## Question 2
+
+
+=====================================================================================================================================
+
+### $2(\alpha)$
+
+
+Let Y be the months of immunity provided by the vaccines. A be the vaccines with 3 levels ("V1","V2","V3").
+
+B be the patient category  with 4 levels ("P1","P2","P3","P4"). The response $Y_{ijk}$ is the $k_{th}$ observation  in the cell(i,j) where i=1,2,3 and j=1,2,3,4. This is represented int the form 
+
+$Y_{ijk}$= $\mu$ + $\alpha_i$ +$\beta_j$ + $\gamma_{ij}$ + $\epsilon_{ijk}$
+
+
+where:
+
+
+$\mu$ = overall mean.
+
+
+$\alpha_i$ = addition effect of the $i_{th}$ level of factor A.
+
+
+$\beta_j$ = addition effect of the $j_{th}$ level of factor B.
+
+
+$\gamma_{ij}$ = interaction effect of the $i_{th}$ level of factor A and $j_{th}$ level of factor B.
+
+
+$\epsilon_{ijk}$ = noise in the model ~N(0,$\sigma^{2}$) are independent under the constraints.
+
+$\sum_{i = 1}^{3} \alpha_i$=0  , $\sum_{j = 1}^{4} \beta_i$=0 ,  $\sum_{i = 1}^{3} \gamma_i$=0  for j=1,2,3,4  ,   $\sum_{j = 1}^{4} \gamma_j$=0 for i=1,2,3. 
+
+
+
+Let $A_i$ be indicator for level i of A.
+Let $B_j$ be indicator for level j of B.
+Then $A_iB_j$ is an indicator for when A is at level i, B is at level j.
+
+
+The Full model where 2-way anova is represented as a linear regression.
+
+
+y= $\mu$ +$\alpha_1 A_1$+ $\alpha_2 A_2$+ $\alpha_3 A_3$  
+
+
++$\beta_1 B_1$+$\beta_2 B_2$+$\beta_3 B_3$+$\beta_4 B_4$
+
+
++$\gamma_{11} A_1 B_1$+$\gamma_{12} A_1B_2$+ $\gamma_{13} A_1 B_3$+$\gamma_{14} A_1 B_4$
+
+
++$\gamma_{21} A_2 B_1$+$\gamma_{22} A_2B_2$+ $\gamma_{23} A_2 B_3$+$\gamma_{24} A_2 B_4$
+
+
++$\gamma_{31} A_3 B_1$+$\gamma_{32} A_3B_2$+ $\gamma_{33} A_3 B_3$+$\gamma_{34} A_3 B_4$ + $\epsilon$
+
+
+which is over parameterised hence reducing it by applying constraint via removing the values with index=1, we get 
+
+
+y= $\mu$ + $\alpha_2 A_2$+ $\alpha_3 A_3$  
+
+
++$\beta_2 B_2$+$\beta_3 B_3$+$\beta_4 B_4$
+
+
++$\gamma_{22} A_2B_2$+ $\gamma_{23} A_2 B_3$+$\gamma_{24} A_2 B_4$
+
+
++$\gamma_{32} A_3B_2$+ $\gamma_{33} A_3 B_3$+$\gamma_{34} A_3 B_4$ +$\epsilon$
+
+
+Data-setup
+
+
+```{r}
+Pat=factor(rep(c("P1","P2","P3","P4"),each=12))
+Vac=factor(rep(c("V1","V2","V3"),each=4,times=4))
+Mon=c(4,5,3,4,6,6,4,4,5,6,6,3,4,5,5,6,5,7,8,8,6,5,6,7,8,9,9,10,
+3,4,5,4,2,3,4,7,10,10,9,11,10,11,11,12,12,12,9,11)
+vacdata=data.frame(Mon,Pat,Vac)
+```
+### $2(\beta)$
+```{r}
+SSE_full<-50
+DF_full<-36
+SSE_reduced<-128
+DF_reduced<-42
+Fcomputed<-((SSE_reduced-SSE_full)/(DF_reduced-DF_full))/(SSE_full/DF_full)
+Fcomputed
+Fcritical<-qf(.95,6,36)
+Fcritical 
+```
+
+
+Here Fcomputed >Fcritical at significance level =.05 (9.36>2.363751) and hence we reject null hypothesis.The reduced model cannot replace the full model because there is some kind of interaction effect in the model .
+
+
+
+### $2(\gamma)$
+we will choose full model which can be represented as:
+
+
+y= $\mu$ + $\alpha_2 A_2$+ $\alpha_3 A_3$  
+
+
++$\beta_2 B_2$+$\beta_3 B_3$+$\beta_4 B_4$
+
+
++$\gamma_{22} A_2B_2$+ $\gamma_{23} A_2 B_3$+$\gamma_{24} A_2 B_4$
+
+
++$\gamma_{32} A_3B_2$+ $\gamma_{33} A_3 B_3$+$\gamma_{34} A_3 B_4$ 
+
+
+We can substitute the values of indicator $A_i$ (vac) and $B_i$ (pat) from the  below expression.
+```{r}
+fit<-
+  lm(Mon~Vac*Pat,data=vacdata)
+summary(fit)
+```
+immunity_month= 4.000000e+00 + "VacV2"*1  + "VacV3" * 1 + "PatP2" *1 + "PatP3" * 5  +"PatP4" * 6  + "VacV2" * "PatP2" * 1  +"VacV3"*"PatP2"*-4.986e-15  +"VacV2"*"PatP3"*-6 +
+"VacV3"*"PatP3"*-6 + "VacV2"*"PatP4"*-7.321e-15  +"VacV3"*"PatP4"-6.661e-15 
+
+
+
+### $2(\delta)$
+Checking the interaction plot
+```{r}
+interaction.plot(Vac,Pat,Mon,col = 1:4)
+```
+
+
+We see that the p3 in green has interaction with p1 an p2 while other patients do not have interaction with each other . So we woud try removing the p3 and check the model again.
+```{r}
+# removing patient p3
+
+Pat=factor(rep(c("P1","P2","P4"),each=12))
+Vac=factor(rep(c("V1","V2","V3"),each=4,times=3))
+Mon=c(4,5,3,4,6,6,4,4,5,6,6,3,4,5,5,6,5,7,8,8,6,5,6,7,10,10,9,11,10,11,11,12,12,12,9,11)
+vacdata=data.frame(Mon,Pat,Vac)
+interaction.plot(Vac,Pat,Mon,col = 1:4)
+
+```
+
+
+we now check the anova for the model with and without interaction.
+
+
+```{r}
+# i) without interaction (reduced model)
+twoWayAnova<-aov(Mon~Vac+Pat,data=vacdata)
+summary(twoWayAnova)
+
+# ii) with interaction (full model)
+twoWayAnova<-aov(Mon~Vac*Pat,data=vacdata)
+summary(twoWayAnova)
+```
+
+
+We see that the interaction effect in the fuller model is not significant and thus we fail to reject null hypothesis and state that the reduced model is better than the full model.

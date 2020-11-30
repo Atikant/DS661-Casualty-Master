@@ -1,0 +1,120 @@
+---
+title: "ST-661 - R for data Analytics Mini Project"
+author: "Atikant Negi"
+output: 
+  html_document :
+  code_folding : hide
+---
+
+```{r setup, include=FALSE}
+library(pxR)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Road accident casualties in Ireland{.tabset}
+### Synopsis
+__Objective__ : The objective of the project is to go through the road accident casualty data in Ireland from year 2005 - 2018 and answer some questions around it like what gender, age groups and road type users are more likely to encounter a casualty. What are the trends over the years around the injuries and people killed in road accidents. Predicting the outcomes of the near future events based on the previous data.
+
+---
+
+__Solution__ : Going through and analyzing the data using various pairs of explanatory variables we were able to draw conclusion. We used a variety of packages in R to draw the results.
+
+---
+
+__Insights__ : Various insights were drawn though the analysis such as:\
+
+* Most no. of cases(9442) came in year 2009.
+* Most no. of deaths (388) were reported in year 2005. 
+* The no. of deaths have been gradually decreasing although the average number of cases (8017) reported remains approximately constant.
+
+---
+
+
+### Packages Requirement
+
+The following packages were used in the project:
+
+* pxR
+* ggplot2
+* dplyr
+* relaimpo
+* Knitr
+* Fitdistrplus
+* car
+
+```{r ,eval=FALSE,}
+library(pxR)
+library(ggplot2)
+library(relaimpo)
+library(car)
+```
+
+
+### Data Preparation {.tabset}
+
+This sections consist of all the steps taken in getting the data analysis ready. The steps are explained in detail below.
+
+#### Data Import
+
+__Source of Data__ : https://statbank.cso.ie/px/pxeirestat/Database/eirestat/Road%20Safety%20Statistics/Road%20Safety%20Statistics_statbank.asp?SP=Road%20Safety%20Statistics&Planguage=0&ProductID=DB_RSA
+\
+
+__File Name__ : ROA16
+\
+
+__File Type__ : .Px
+\
+
+__Import command__ : 
+\
+
+```{r}
+options(width = 120)
+data<-as.data.frame(read.px("ROA16.px"))
+head(data)
+colnames(data)
+dim(data)
+```
+__Data Cleaning__ : 
+The data is flawless and needs no data cleaning. The values seems in line and there are no missing or invalid values in the data-set.
+
+
+#### Data Preview
+
+#### Data Description
+
+There are 5 categorical data in the data-set i.e. 
+\
+
+* Statistics has 3 levels
+```{r}
+levels(data$Statistic)
+```
+
+
+* Years has 14 levels as:
+```{r}
+levels(data$Year)
+```
+
+* Road user type has 8 levels
+```{r}
+levels(data$Road.User.Type)
+```
+
+* Sex has 2 levels
+```{r}
+levels(data$Sex)
+```
+
+* age group has 13 levels
+```{r}
+levels(data$Age.Group)
+```
+
+
+
+
+### Data Anlaysis
+### Summary

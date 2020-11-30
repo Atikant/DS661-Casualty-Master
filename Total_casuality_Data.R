@@ -15,7 +15,7 @@ check_factors<-function(d){
 library("dplyr")
 
 
-# There are 5 catagorical data in the data-set i.e. 
+# There are 5 categorical data in the data-set i.e. 
 # Statistics has 3 levels
 levels(d$Statistic)
 
