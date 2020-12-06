@@ -3,12 +3,14 @@ title: "ST-661 - R for data Analytics Mini Project"
 author: "Atikant Negi"
 output: 
   html_document :
-  code_folding : hide
+    code_folding: "hide"
 ---
 
 ```{r setup, include=FALSE}
 library(pxR)
-knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE,fig.width = 11,fig.height = 8)
 ```
 
 
@@ -27,6 +29,8 @@ __Insights__ : Various insights were drawn though the analysis such as:\
 * Most no. of cases(9442) came in year 2009.
 * Most no. of deaths (388) were reported in year 2005. 
 * The no. of deaths have been gradually decreasing although the average number of cases (8017) reported remains approximately constant.
+* The most number of casualties are seen in car drivers with its peak in 2009 and the lowest in 2013.
+* 
 
 ---
 
@@ -44,7 +48,9 @@ The following packages were used in the project:
 * car
 
 ```{r ,eval=FALSE,}
+install.packages("ggplot2")
 library(pxR)
+
 library(ggplot2)
 library(relaimpo)
 library(car)
@@ -82,6 +88,11 @@ The data is flawless and needs no data cleaning. The values seems in line and th
 
 #### Data Preview
 
+```{r}
+options(width = 120)
+head(data)
+```
+
 #### Data Description
 
 There are 5 categorical data in the data-set i.e. 
@@ -116,5 +127,138 @@ levels(data$Age.Group)
 
 
 
-### Data Anlaysis
+### Data Anlaysis {.tabset}
+
+#### General analysis
+
+```{r}
+# if we see the total no. of casualties over the years we can sum it as the below data set
+d1<-subset(data,Statistic=="All Killed and Injured Casualties (Number)"
+           &
+             Road.User.Type=="All road users" 
+           & 
+             Age.Group=="All ages"
+           & 
+             Sex=="Male")%>%
+  group_by(Year)
+
+d2<-subset(data,Statistic=="All Killed and Injured Casualties (Number)"
+           &
+             Road.User.Type=="All road users" 
+           & 
+             Age.Group=="All ages"
+           & 
+             Sex=="Female")%>%
+  group_by(Year)
+total_casuality<-as_tibble(full_join(d1,d2,by=c("Year","Road.User.Type","Age.Group")))
+total_casuality<-mutate(total_casuality,Total_vaue=total_casuality$value.x+total_casuality$value.y)
+
+
+# if we see the total no. of injuries over the years we can sum it as the below data set
+d_only_injured_male<-subset(data,Statistic=="Injured Cassualties (Number)"
+           &
+             Road.User.Type=="All road users" 
+           & 
+             Age.Group=="All ages"
+           & 
+             Sex=="Male")%>%
+  group_by(Year)
+
+d_only_injured_female<-subset(data,Statistic=="Injured Cassualties (Number)"
+           &
+             Road.User.Type=="All road users" 
+           & 
+             Age.Group=="All ages"
+           & 
+             Sex=="Female")%>%
+  group_by(Year)
+total_casuality_injured<-as_tibble(full_join(d_only_injured_male,d_only_injured_female,by=c("Year","Road.User.Type","Age.Group")))
+total_casuality_injured<-mutate(total_casuality_injured,Total_vaue_injured=total_casuality_injured$value.x+total_casuality_injured$value.y)
+
+  
+normalized_data <-data.frame("year"=c(2005:2018),
+                             "Road.User.Type"=rep("All road users",14),
+                            "Injured"=total_casuality_injured$Total_vaue_injured,
+                             "Killed_and_Injured"=total_casuality$Total_vaue,
+                            "killed"=total_casuality$Total_vaue-total_casuality_injured$Total_vaue_injured)
+
+normalized_data
+# summary for casualties
+summary(normalized_data)
+
+# plot for the total casualties
+plot(normalized_data$year,normalized_data$Killed_and_Injured,col="green",type="l",xlab="Year",ylab = "Numbers",ylim=c(0,10000))
+lines(normalized_data$year,normalized_data$Injured,col="blue",type="l" )
+lines(normalized_data$year,normalized_data$killed,col="red",type="l")
+
+legend(2015, 10500, legend=c("Killed", "Injured","Total casualties"),
+       col=c("red", "blue" ,"green"), lty=1, cex=0.75)
+
+
+Male_female<-data.frame("year"=c(2005:2018),
+                        "male_injured"=d_only_injured_male$value,
+                        "female_injured"=d_only_injured_female$value,
+                        "male_killed"=d1$value-d_only_injured_male$value,
+                        "female_killed"=d2$value-d_only_injured_female$value
+                          )
+plot(Male_female$year,Male_female$female_injured,col="magenta",type="l",xlab="Year",ylab = "Numbers",ylim=c(0,6000))
+lines(Male_female$year,Male_female$male_injured ,col="blue",type="l" )
+lines(Male_female$year,Male_female$male_killed,col="cyan",type="l")
+lines(Male_female$year,Male_female$female_killed,col="pink",type="l")
+
+legend(2015, 6250, legend=c("Deceased Male", "Injured Male","Deceased Female", "Injured female"),
+       col=c("cyan", "blue" ,"pink","magenta"), lty=1, cex=0.75)
+
+```
+\
+\
+
+#### Road user analysis
+
+```{r}
+options(width = 140)
+library(ggplot2)
+roadUser<-subset(data,Statistic=='All Killed and Injured Casualties (Number)' &
+                (
+                  Road.User.Type=='Pedestrians' |
+                  Road.User.Type=='Pedal cyclists' |
+                  Road.User.Type=='Motor cyclists' |
+                  Road.User.Type=='Car drivers' |
+                  Road.User.Type=='Car passengers' |
+                  Road.User.Type=='Other road users'
+                    )
+              & Age.Group=="All ages")
+
+roadUser_normalized_data<-data.frame("year"=roadUser$Year,"UserType"=roadUser$Road.User.Type,"Sex"=roadUser$Sex,"value"=roadUser$value)
+
+
+
+ggplot(roadUser_normalized_data,aes(x=year,y=value,col=UserType,group=UserType))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(.~Sex)
+
+```
+\
+\
+
+#### Age group analysis
+
+```{r}
+AgeGroup<-subset(data,Statistic=='All Killed and Injured Casualties (Number)' &
+                      Age.Group !="All ages" 
+             & Road.User.Type=="All road users")
+
+
+
+ggplot(AgeGroup,aes(x=Year,y=value,col=Age.Group,group=Age.Group))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(.~Sex)
+
+```
+
+
+
+
 ### Summary

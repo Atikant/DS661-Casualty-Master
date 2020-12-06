@@ -4,9 +4,11 @@ install.packages("ggplot2")
 library(pxR)
 library("ggplot2")
 d<-as.data.frame(read.px("ROA16.px"))
+
 str(d)
 head(d)
-
+colnames(d)
+dim(d) 
 check_factors<-function(d){
   list1<-d[]
   sapply(list1, factor(list1))
@@ -92,4 +94,5 @@ plot(normalized_data$year,normalized_data$Killed_and_Injured,col="green",type="l
 lines(normalized_data$year,normalized_data$Injured,col="blue",type="l")
 lines(normalized_data$year,normalized_data$killed,col="red",type="l")
 
+lm()
        
