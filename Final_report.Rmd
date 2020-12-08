@@ -7,9 +7,12 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+
 library(pxR)
 library(dplyr)
 library(ggplot2)
+library(ggpubr)
+
 knitr::opts_chunk$set(echo = TRUE,fig.width = 11,fig.height = 8)
 ```
 
@@ -214,20 +217,74 @@ legend(2015, 6250, legend=c("Deceased Male", "Injured Male","Deceased Female", "
 \
 
 #### Road user analysis
+The following graph shows the number of deaths thoughout the years (2015-2018) for all the road user types.
+```{r}
+options(width = 80)
+library(ggplot2)
+totalRoadUserData=data[data$Statistic =='All Killed and Injured Casualties (Number)' & 
+                    data$Road.User.Type != "All road users" & 
+                    data$Road.User.Type != "All Car users", ]
+totalRoadUserCasualty<-aggregate(totalRoadUserData$value, by=list(totalRoadUserData$Road.User.Type), FUN=sum)
+
+ggplot(totalRoadUserCasualty,aes(x=Group.1,y=x,fill=Group.1))+geom_bar(stat="identity")+
+  xlab("Type of road users")+ylab("no. of casualties")+theme_minimal()
+
+```
+\
+\
+This graph clearly shows that the no. of casualties for car drivers is more than any road user type category. \\\
+
+---
+
+```{r}
+totalRoadUserkilled = data[data$Statistic !='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users", ]
+ggplot(data=totalRoadUserkilled, aes(x=Road.User.Type, y=value, fill=Statistic), position = "fill") +
+  geom_bar(stat="identity")+
+  xlab("Type of road users")+ylab("no. of casualties")+theme_minimal()
+```
+\this graph shows the injury to kill number of the Road user type category .
+\
+
+---
+
+We will dive more deeply in the stats comparing the gender of the people 
+```{r}
+car_driver<-data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"
+                 & data$Age.Group != 'All ages', ]
+
+
+car_driver<-transform(car_driver,Road.User.Type=ifelse(car_driver$Road.User.Type!="Car drivers","Others","Car drivers"))
+
+
+ggplot(car_driver,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+facet_wrap(~Sex)+geom_hline(yintercept=.5)+coord_flip()
+```
+\ This plot shows the decreasing proportion of casualties in car drivers and  also comparing male , female car drivers.\
+
+---
+
+Proportion of Male and Female Car Driving Death Casualties Trend over 14 years.
+```{r}
+car_driver<-data[(data$Statistic =='Killed Casualties (Number)'|data$Statistic =='All Killed and Injured Casualties (Number)') & data$Road.User.Type == "Car drivers" & data$Age.Group == 'All ages'  , ]
+
+
+car_driver<-transform(car_driver,Road.User.Type=ifelse(car_driver$Road.User.Type=="Car drivers" & car_driver$Statistic =='Killed Casualties (Number)',"Deceased drivers","Others"))
+
+
+ggplot(car_driver,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+facet_wrap(~Sex)+geom_hline(yintercept=.95)+geom_hline(yintercept=.98)+coord_flip()
+```
+\ This plot shows the decreasing proportion of deaths in car drivers and  also comparing male , female car drivers.\
+
+
+---
 
 ```{r}
 options(width = 140)
 library(ggplot2)
 roadUser<-subset(data,Statistic=='All Killed and Injured Casualties (Number)' &
-                (
-                  Road.User.Type=='Pedestrians' |
-                  Road.User.Type=='Pedal cyclists' |
-                  Road.User.Type=='Motor cyclists' |
-                  Road.User.Type=='Car drivers' |
-                  Road.User.Type=='Car passengers' |
-                  Road.User.Type=='Other road users'
-                    )
-              & Age.Group=="All ages")
+                
+                  Road.User.Type!= "All road users" & 
+                  Road.User.Type != "All Car users" &
+                   Age.Group=="All ages")
 
 roadUser_normalized_data<-data.frame("year"=roadUser$Year,"UserType"=roadUser$Road.User.Type,"Sex"=roadUser$Sex,"value"=roadUser$value)
 
@@ -258,7 +315,167 @@ ggplot(AgeGroup,aes(x=Year,y=value,col=Age.Group,group=Age.Group))+
 
 ```
 
+\
+\
 
+---
+
+Categorical Count of AGe Group WIse Casualties for 14 years.
+
+```{r}
+options(width = 2000)
+AgeGroup_All = data[data$Statistic !='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users" & data$Age.Group != "All ages", ]
+ggplot(data=AgeGroup_All, aes(x=Age.Group, y=value, fill=Statistic), position = "fill") +
+  geom_bar(stat="identity")+coord_flip()
+```
+
+\
+\
+
+---
+
+Analyzing behaviour of Top 4 Casualties Counts Age Groups Based on Car DRIVING CASUALTY PROPORTION AND KILLED Car DRIVING CASUALTY PROPORTION TRENDS.
+```{r}
+sub_cat1 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            (data$Age.Group == '15 - 17 years' | data$Age.Group == '18 - 20 years' | data$Age.Group == '21 - 24 years'), ]
+sub_cat1<-transform(sub_cat1,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
+sub_cat1$Road.User.Type=factor(sub_cat1$Road.User.Type)
+sub_cat1 <- aggregate(value~Road.User.Type+Year, sub_cat1, sum)
+
+sub_cat2 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  & data$Age.Group == '25 - 34 years' , ]
+sub_cat2<-transform(sub_cat2,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
+sub_cat2$Road.User.Type=factor(sub_cat2$Road.User.Type)
+
+sub_cat3 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  & data$Age.Group == '35 - 44 years' , ]
+sub_cat3<-transform(sub_cat3,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
+sub_cat3$Road.User.Type=factor(sub_cat3$Road.User.Type)
+
+sub_cat4 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  & data$Age.Group == '45 - 54 years' , ]
+sub_cat4<-transform(sub_cat4,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
+sub_cat4$Road.User.Type=factor(sub_cat4$Road.User.Type)
+
+
+cat1<-ggplot(sub_cat1,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("15 - 24 Age group driver's casualties")+coord_flip()
+cat2<-ggplot(sub_cat2,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("25 - 34 years Age group driver's casualties")+coord_flip()
+cat3<-ggplot(sub_cat3,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("35 - 44 years Age group driver's casualties")+coord_flip()
+cat4<-ggplot(sub_cat4,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("45 - 54 years Age group driver's casualties")+coord_flip()
+
+figure <- ggarrange(cat1, cat2, cat3,cat4,
+                     labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+\
+
+---
+
+Road User TYpe Total Casualties Proportion Trend
+```{r}
+
+sub_cat1 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat1<-transform(sub_cat1,Road.User.Type=ifelse(Road.User.Type!="Pedestrians","All road users",as.character(Road.User.Type)))
+sub_cat1$Road.User.Type=factor(sub_cat1$Road.User.Type)
+sub_cat1 <- aggregate(value~Road.User.Type+Year, sub_cat1, sum)
+cat1<-ggplot(sub_cat1,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Pedestrians casualty proportion trend")+coord_flip()
+
+sub_cat2 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat2<-transform(sub_cat2,Road.User.Type=ifelse(Road.User.Type!="Pedal cyclists","All road users",as.character(Road.User.Type)))
+sub_cat2$Road.User.Type=factor(sub_cat2$Road.User.Type)
+sub_cat2 <- aggregate(value~Road.User.Type+Year, sub_cat2, sum)
+cat2<-ggplot(sub_cat2,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Pedal cyclists casualty proportion trend")+coord_flip()
+
+sub_cat3 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat3<-transform(sub_cat3,Road.User.Type=ifelse(Road.User.Type!="Motor cyclists","All road users",as.character(Road.User.Type)))
+sub_cat3$Road.User.Type=factor(sub_cat3$Road.User.Type)
+sub_cat3 <- aggregate(value~Road.User.Type+Year, sub_cat3, sum)
+cat3<-ggplot(sub_cat3,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Motor cyclists casualty proportion trend")+coord_flip()
+  
+sub_cat4 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat4<-transform(sub_cat4,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
+sub_cat4$Road.User.Type=factor(sub_cat4$Road.User.Type)
+sub_cat4 <- aggregate(value~Road.User.Type+Year, sub_cat4, sum)
+cat4<-ggplot(sub_cat4,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Car drivers casualty proportion trend")+coord_flip()
+
+sub_cat5 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat5<-transform(sub_cat5,Road.User.Type=ifelse(Road.User.Type!='Car passengers' ,"All road users",as.character(Road.User.Type)))
+sub_cat5$Road.User.Type=factor(sub_cat5$Road.User.Type)
+sub_cat5 <- aggregate(value~Road.User.Type+Year, sub_cat5, sum)
+cat5<-ggplot(sub_cat5,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Car passengers casualty proportion trend")+coord_flip()
+
+sub_cat6 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat6<-transform(sub_cat6,Road.User.Type=ifelse(Road.User.Type!="Other road users","All road users",as.character(Road.User.Type)))
+sub_cat6$Road.User.Type=factor(sub_cat6$Road.User.Type)
+sub_cat6 <- aggregate(value~Road.User.Type+Year, sub_cat6, sum)
+
+
+cat6<-ggplot(sub_cat6,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Other road users casualty proportion trend")+coord_flip()
+
+figure <- ggarrange(cat1, cat2, cat3,cat4,cat5,cat6,
+                    ncol = 2, nrow = 3)
+figure
+```
+\
+\
+
+---
+
+Road User TYpe Total Casualties Proportion Trend
+```{r}
+
+sub_cat1 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat1<-transform(sub_cat1,Road.User.Type=ifelse(Road.User.Type!="Pedestrians","All road users",as.character(Road.User.Type)))
+sub_cat1$Road.User.Type=factor(sub_cat1$Road.User.Type)
+sub_cat1 <- aggregate(value~Road.User.Type+Year, sub_cat1, sum)
+cat1<-ggplot(sub_cat1,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Pedestrians casualty proportion trend")+coord_flip()
+
+sub_cat2 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat2<-transform(sub_cat2,Road.User.Type=ifelse(Road.User.Type!="Pedal cyclists","All road users",as.character(Road.User.Type)))
+sub_cat2$Road.User.Type=factor(sub_cat2$Road.User.Type)
+sub_cat2 <- aggregate(value~Road.User.Type+Year, sub_cat2, sum)
+cat2<-ggplot(sub_cat2,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Pedal cyclists casualty proportion trend")+coord_flip()
+
+sub_cat3 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat3<-transform(sub_cat3,Road.User.Type=ifelse(Road.User.Type!="Motor cyclists","All road users",as.character(Road.User.Type)))
+sub_cat3$Road.User.Type=factor(sub_cat3$Road.User.Type)
+sub_cat3 <- aggregate(value~Road.User.Type+Year, sub_cat3, sum)
+cat3<-ggplot(sub_cat3,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Motor cyclists casualty proportion trend")+coord_flip()
+  
+sub_cat4 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat4<-transform(sub_cat4,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
+sub_cat4$Road.User.Type=factor(sub_cat4$Road.User.Type)
+sub_cat4 <- aggregate(value~Road.User.Type+Year, sub_cat4, sum)
+cat4<-ggplot(sub_cat4,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Car drivers casualty proportion trend")+coord_flip()
+
+sub_cat5 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat5<-transform(sub_cat5,Road.User.Type=ifelse(Road.User.Type!='Car passengers' ,"All road users",as.character(Road.User.Type)))
+sub_cat5$Road.User.Type=factor(sub_cat5$Road.User.Type)
+sub_cat5 <- aggregate(value~Road.User.Type+Year, sub_cat5, sum)
+cat5<-ggplot(sub_cat5,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Car passengers casualty proportion trend")+coord_flip()
+
+sub_cat6 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+            data$Age.Group == 'All ages' , ]
+sub_cat6<-transform(sub_cat6,Road.User.Type=ifelse(Road.User.Type!="Other road users","All road users",as.character(Road.User.Type)))
+sub_cat6$Road.User.Type=factor(sub_cat6$Road.User.Type)
+sub_cat6 <- aggregate(value~Road.User.Type+Year, sub_cat6, sum)
+
+
+cat6<-ggplot(sub_cat6,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Other road users casualty proportion trend")+coord_flip()
+
+figure <- ggarrange(cat1, cat2, cat3,cat4,cat5,cat6,
+                    ncol = 2, nrow = 3)
+figure
+```
 
 
 ### Summary

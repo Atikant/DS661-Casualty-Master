@@ -1,0 +1,201 @@
+---
+title: "R_PROJECT"
+author: "AVANTIKA SINGH (20250339)"
+date: "12/6/2020"
+output: html_document
+---
+
+
+# Determining the SAFESR ROAD USER TYPE based on AGE GROUP AND GENDER BASED CASUALTIES ANALYSIS OVER TIME PERIOD OF 14 YEARS.
+
+# Categorical Aggregate of Total Casualties For Each ROad User Type for 14 years.
+
+```{r}
+library(pxR)
+df = as.data.frame(read.px("/Users/macbp/Downloads/ROA16.px"))
+names(df)
+dim(df)
+head(df)
+```
+
+```{r}
+p<-ggplot(data=df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type != "All road users" & df$Road.User.Type != "All Car users", ], aes(x=Road.User.Type, y=value)) +
+  geom_bar(stat="identity")
+p
+```
+
+
+```{r}
+sub1 = df[df$Statistic !='All Killed and Injured Casualties (Number)' & df$Road.User.Type != "All road users" & df$Road.User.Type != "All Car users", ]
+ggplot(data=sub1, aes(x=Road.User.Type, y=value, fill=Statistic), position = "fill") +
+  geom_bar(stat="identity")
+```
+
+# Car Drivers having the highest Casualties Count.
+# Deep Dicing in to Car Driver Casualties for Gender and AGe Group.
+
+# Proportion of Male and Female Car Driving Casualties Trend over 14 years.
+
+```{r}
+sub1 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Sex == 'Female', ]
+temp1 <- aggregate(value~Year, sub1, sum)
+sub2 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "All road users" & df$Sex == 'Female', ]
+temp2 <- aggregate(value~Year, sub2, sum)
+Female_prop = round(temp1$value/temp2$value, 2)
+Female_prop
+
+sub3 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Sex == 'Male', ]
+temp3 <- aggregate(value~Year, sub3, sum)
+sub4 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "All road users" & df$Sex == 'Male', ]
+temp4 <- aggregate(value~Year, sub4, sum)
+Male_prop = round(temp3$value/temp4$value, 2)
+Male_prop
+```
+
+
+# Proportion of Male and Female Car Drivind Death Casualties Trend over 14 years.
+
+```{r}
+sub1 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Sex == 'Female', ]
+temp1 <- aggregate(value~Year, sub1, sum)
+sub2 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Sex == 'Female', ]
+temp2 <- aggregate(value~Year, sub2, sum)
+Female_kld_prop = round(temp1$value/temp2$value, 2)
+Female_kld_prop
+
+sub3 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Sex == 'Male', ]
+temp3 <- aggregate(value~Year, sub3, sum)
+sub4 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Sex == 'Male', ]
+temp4 <- aggregate(value~Year, sub4, sum)
+Male_kld_prop = round(temp3$value/temp4$value, 2)
+Male_kld_prop
+```
+
+# Categorical Count of AGe Group WIse Casualties for 14 years.
+
+```{r}
+sub1 = df[df$Statistic !='All Killed and Injured Casualties (Number)' & df$Road.User.Type != "All road users" & df$Road.User.Type != "All Car users" & df$Age.Group != "All ages", ]
+ggplot(data=sub1, aes(x=Age.Group, y=value, fill=Statistic), position = "fill") +
+  geom_bar(stat="identity")
+```
+
+
+# 25-34 years AGE GROUP Has highest Casualties COunt.
+
+# Analyzing behaviour of Top 4 Casualties Counts AGe Groups Based on Car DRIVING CASUALTY PROPORTION AND KILLED Car DRIVING CASUALTY PROPORTION TRENDS.
+
+```{r}
+sub11 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & 
+            (df$Age.Group == '15 - 17 years' | df$Age.Group == '18 - 20 years' | df$Age.Group == '21 - 24 years'), ]
+temp11 <- aggregate(value~Year, sub11, sum)
+sub12 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "All road users" & 
+            (df$Age.Group == '15 - 17 years' | df$Age.Group == '18 - 20 years' | df$Age.Group == '21 - 24 years'), ]
+temp12 <- aggregate(value~Year, sub12, sum)
+age1_prop = round(temp11$value/temp12$value, 2)
+age1_prop
+
+sub21 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Age.Group == '25 - 34 years', ]
+temp21 <- aggregate(value~Year, sub21, sum)
+sub22 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "All road users" & df$Age.Group == '25 - 34 years', ]
+temp22 <- aggregate(value~Year, sub22, sum)
+age2_prop = round(temp21$value/temp22$value, 2)
+age2_prop
+
+sub3 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Age.Group == '35 - 44 years', ]
+temp3 <- aggregate(value~Year, sub3, sum)
+sub4 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "All road users" & df$Age.Group == '35 - 44 years', ]
+temp4 <- aggregate(value~Year, sub4, sum)
+age2_prop = round(temp3$value/temp4$value, 2)
+age2_prop
+
+sub3 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers" & df$Age.Group == '45 - 54 years', ]
+temp3 <- aggregate(value~Year, sub3, sum)
+sub4 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "All road users" & df$Age.Group == '45 - 54 years', ]
+temp4 <- aggregate(value~Year, sub4, sum)
+age3_prop = round(temp3$value/temp4$value, 2)
+age3_prop
+```
+
+# Overall Trend of Casualties and Killed Casualties Proportions
+
+```{r}
+sub1 = df[df$Statistic =='Killed Casualties (Number)', ]
+temp1 <- aggregate(value~Year, sub1, sum)
+sub2 = df[df$Statistic =='Injured Cassualties (Number)', ]
+temp2 <- aggregate(value~Year, sub2, sum)
+sub3 = df[df$Statistic =='All Killed and Injured Casualties (Number)', ]
+temp3 <- aggregate(value~Year, sub3, sum)
+Killed_prop = round(temp1$value/temp3$value, 2)
+Injured_prop = round(temp2$value/temp3$value, 2)
+Injured_prop
+Killed_prop
+```
+
+# Road User TYpe Casualties Proprtion Trend
+
+```{r}
+sub1 = df[df$Road.User.Type =='Pedestrians' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp1 <- aggregate(value~Year, sub1, sum)
+sub2 = df[df$Road.User.Type =='Pedal cyclists' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp2 <- aggregate(value~Year, sub2, sum)
+sub3 = df[df$Road.User.Type =='Motor cyclists' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp3 <- aggregate(value~Year, sub3, sum)
+sub4 = df[df$Road.User.Type =='Car drivers' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp4 <- aggregate(value~Year, sub4, sum)
+sub5 = df[df$Road.User.Type =='Car passengers' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp5 <- aggregate(value~Year, sub5, sum)
+sub6 = df[df$Road.User.Type =='Other road users' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp6 <- aggregate(value~Year, sub6, sum)
+sub7 = df[df$Road.User.Type =='All road users' & df$Statistic == 'All Killed and Injured Casualties (Number)', ]
+temp7 <- aggregate(value~Year, sub7, sum)
+Pedestrian_prop = round(temp1$value/temp7$value, 2)
+Pcyclist_prop = round(temp2$value/temp7$value, 2)
+Mcyclist_prop = round(temp3$value/temp7$value, 2)
+CarD_prop = round(temp4$value/temp7$value, 2)
+CarP_prop = round(temp5$value/temp7$value, 2)
+Pedestrian_prop
+Pcyclist_prop
+Mcyclist_prop
+CarD_prop
+CarP_prop
+```
+
+
+# Road User TYpe Killed Casualties Proprtion Trend
+
+```{r}
+sub11 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Pedestrians", ]
+temp11 = aggregate(value~Year, sub11, sum)
+sub12 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Pedestrians", ]
+temp12 = aggregate(value~Year, sub12, sum)
+sub21 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Pedal cyclists", ]
+temp21 = aggregate(value~Year, sub21, sum)
+sub22 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Pedal cyclists", ]
+temp22 = aggregate(value~Year, sub2, sum)
+sub31 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Motor cyclists", ]
+temp31 = aggregate(value~Year, sub31, sum)
+sub32 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Motor cyclists", ]
+temp32 = aggregate(value~Year, sub32, sum)
+sub41 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Car drivers", ]
+temp41 = aggregate(value~Year, sub41, sum)
+sub42 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car drivers", ]
+temp42 = aggregate(value~Year, sub42, sum)
+sub51 = df[df$Statistic =='Killed Casualties (Number)' & df$Road.User.Type == "Car passengers", ]
+temp51 = aggregate(value~Year, sub51, sum)
+sub52 = df[df$Statistic =='All Killed and Injured Casualties (Number)' & df$Road.User.Type == "Car passengers", ]
+temp52 = aggregate(value~Year, sub52, sum)
+Ped_kld_prop = round(temp11$value/temp12$value, 2)
+PCyc_kld_prop = round(temp21$value/temp22$value, 2)
+MCyc_kld_prop = round(temp31$value/temp32$value, 2)
+CarD_kld_prop = round(temp41$value/temp42$value, 2)
+CarP_kld_prop  = round(temp51$value/temp52$value, 2)
+Ped_kld_prop
+PCyc_kld_prop
+MCyc_kld_prop
+CarD_kld_prop
+CarP_kld_prop
+```
+
+
+
+# Hence we conclude that even though the total number of Casualties for the Road User Type - Pedal Cyclist seems to display an increasing trend over the years; yet it has the least proportion of Killed Casualties amongst all other RUT and it is also displaying a slightly decreasing trend.
