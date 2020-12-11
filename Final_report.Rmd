@@ -1,6 +1,6 @@
 ---
-title: "ST-661 - R for data Analytics Mini Project"
-author: "Atikant Negi"
+title: "ST-661 - R for data Analytics Mini Project(Group-11)"
+author: "ANITA DONALDSON, ATIKANT NEGI, AVANTIKA SINGH & SIOBHAIN TOPPING"
 output: 
   html_document :
     code_folding: "hide"
@@ -19,24 +19,53 @@ knitr::opts_chunk$set(echo = TRUE,fig.width = 11,fig.height = 8)
 
 ## Road accident casualties in Ireland{.tabset}
 ### Synopsis
-__Objective__ : The objective of the project is to go through the road accident casualty data in Ireland from year 2005 - 2018 and answer some questions around it like what gender, age groups and road type users are more likely to encounter a casualty. What are the trends over the years around the injuries and people killed in road accidents. Predicting the outcomes of the near future events based on the previous data.
+__Objective__ : The objective of the project is to examine the road accident casualty data in Ireland during the period 2005 - 2018. In order to understand the main trends in road traffic casualties,the analysis is structured as follows: 
+\
+1. Gender profile:
+   What is the relationship between male and female road traffic casualties and fatalities? 
+\
+2. Age profile:
+   What is the highest risk age group and establish if it has changed over time.
+\
+3. Type of the road user:
+  The casualties and deaths for the different types of road users was analyzed to establish the safest mode of transport.
+\
+4. An Overview of the major changes in Irish Road Traffic Law & Legislation regarding the mandatory driving lessons for all learner drivers from 2011 (www.rsa.ie) : Changes can be seen in the number of casualties and fatalities on Irish roads, which coincide with public awareness and the introduction of penalty points for offenses to the Driving Act.
+
 
 ---
 
-__Solution__ : Going through and analyzing the data using various pairs of explanatory variables we were able to draw conclusion. We used a variety of packages in R to draw the results.
+__Solution__ : The data provides a useful insight into the distribution of the road traffic fatalities. A number of packages in R were used to obtain these results.
 
 ---
 
-__Insights__ : Various insights were drawn though the analysis such as:\
-
-* Most no. of cases(9442) came in year 2009.
-* Most no. of deaths (388) were reported in year 2005. 
-* The no. of deaths have been gradually decreasing although the average number of cases (8017) reported remains approximately constant.
-* The most number of casualties are seen in car drivers with its peak in 2009 and the lowest in 2013.
-* 
+__Insights__ : Various insights were drawn though the analysis such as:
+\
+* Men show a higher ratio of overall casualties (injuries and fatalities) than that of women through all the years. 
+\
+* The age group 25-34 years shows the highest proportion of road casualties where as the  age group of 65 and above shows the highest proportions of fatalities due to road casualties.
+\
+* Car users have the highest casualties and among which the car drivers have the highest fatalities thought out the 14 years of data collected.
+\
+* The data shows the rate of decrease of fatalities in each year, increases in line with change in legislation in 2006 ,2011 ,2014 and the introduction and stricter measures around penalty points.
+\
+* Further insights could be drawn, if the data provided included the severity of injuries.  
 
 ---
 
+__Authors' statements__ :
+
+\
+I ANITA DONALDSON had primary responsibility for the material in section Synopsis and General analysis under data Analysis tab.
+\
+I ATIKANT NEGI had primary responsibility for the material in section Road User Analysis and Age profile under data Analysis tab.
+\
+I AVANTIKA SINGH had primary responsibility for the material in Summary and Road User Analysis under data Analysis tab.
+\
+I SIOBHAIN TOPPING had primary responsibility for the material in Road User Analysis and Gender profile under data Analysis tab.
+
+
+---
 
 ### Packages Requirement
 
@@ -45,24 +74,22 @@ The following packages were used in the project:
 * pxR
 * ggplot2
 * dplyr
-* relaimpo
 * Knitr
-* Fitdistrplus
-* car
+* ggpubr
 
 ```{r ,eval=FALSE,}
-install.packages("ggplot2")
-library(pxR)
 
+library(pxR)
 library(ggplot2)
-library(relaimpo)
-library(car)
+library(dplyr)
+library(ggpubr)
+
 ```
 
 
 ### Data Preparation {.tabset}
 
-This sections consist of all the steps taken in getting the data analysis ready. The steps are explained in detail below.
+This section described the main steps undertaken in the current analysis.
 
 #### Data Import
 
@@ -85,9 +112,6 @@ head(data)
 colnames(data)
 dim(data)
 ```
-__Data Cleaning__ : 
-The data is flawless and needs no data cleaning. The values seems in line and there are no missing or invalid values in the data-set.
-
 
 #### Data Preview
 
@@ -98,16 +122,22 @@ head(data)
 
 #### Data Description
 
-There are 5 categorical data in the data-set i.e. 
+__Data Cleaning__ : 
+The data-set is flawless and no data cleaning was necessary. The values seems in line and there are no missing or invalid values in the data-set.
+
+
+There are 5 categorical explanatory variables in the data-set and one continuous response variable  i.e. 
 \
 
+The details of the explanatory variables are as follows: 
+\
 * Statistics has 3 levels
 ```{r}
 levels(data$Statistic)
 ```
 
 
-* Years has 14 levels as:
+* There are 14 years in the data-set:
 ```{r}
 levels(data$Year)
 ```
@@ -122,7 +152,7 @@ levels(data$Road.User.Type)
 levels(data$Sex)
 ```
 
-* age group has 13 levels
+* The total number of casualties is split into 13 age groups
 ```{r}
 levels(data$Age.Group)
 ```
@@ -130,9 +160,11 @@ levels(data$Age.Group)
 
 
 
-### Data Anlaysis {.tabset}
+### Data Analysis {.tabset}
 
 #### General analysis
+
+##### General Analysis and Changes in Road Traffic Legislation.
 
 ```{r}
 # if we see the total no. of casualties over the years we can sum it as the below data set
@@ -142,18 +174,17 @@ d1<-subset(data,Statistic=="All Killed and Injured Casualties (Number)"
            & 
              Age.Group=="All ages"
            & 
-             Sex=="Male")%>%
-  group_by(Year)
-
+             Sex=="Male")
+d1<-aggregate(value~Year,d1,sum)
 d2<-subset(data,Statistic=="All Killed and Injured Casualties (Number)"
            &
              Road.User.Type=="All road users" 
            & 
              Age.Group=="All ages"
            & 
-             Sex=="Female")%>%
-  group_by(Year)
-total_casuality<-as_tibble(full_join(d1,d2,by=c("Year","Road.User.Type","Age.Group")))
+             Sex=="Female")
+d2<-aggregate(value~Year,d2,sum)
+total_casuality<-as_tibble(full_join(d1,d2,by=c("Year")))
 total_casuality<-mutate(total_casuality,Total_vaue=total_casuality$value.x+total_casuality$value.y)
 
 
@@ -164,8 +195,8 @@ d_only_injured_male<-subset(data,Statistic=="Injured Cassualties (Number)"
            & 
              Age.Group=="All ages"
            & 
-             Sex=="Male")%>%
-  group_by(Year)
+             Sex=="Male")
+d_only_injured_male<-aggregate(value~Year,d_only_injured_male,sum)
 
 d_only_injured_female<-subset(data,Statistic=="Injured Cassualties (Number)"
            &
@@ -173,9 +204,9 @@ d_only_injured_female<-subset(data,Statistic=="Injured Cassualties (Number)"
            & 
              Age.Group=="All ages"
            & 
-             Sex=="Female")%>%
-  group_by(Year)
-total_casuality_injured<-as_tibble(full_join(d_only_injured_male,d_only_injured_female,by=c("Year","Road.User.Type","Age.Group")))
+             Sex=="Female")
+d_only_injured_female<-aggregate(value~Year,d_only_injured_female,sum)
+total_casuality_injured<-as_tibble(full_join(d_only_injured_male,d_only_injured_female,by=c("Year")))
 total_casuality_injured<-mutate(total_casuality_injured,Total_vaue_injured=total_casuality_injured$value.x+total_casuality_injured$value.y)
 
   
@@ -198,6 +229,31 @@ legend(2015, 10500, legend=c("Killed", "Injured","Total casualties"),
        col=c("red", "blue" ,"green"), lty=1, cex=0.75)
 
 
+
+
+```
+\
+
+
+
+The table above shows the total number of road traffic casualties during the period 2005 - 2018. The total is further split into number of injuries and fatalities for the given year. The graph plots the data in the table. It can be seen that the total number of casualties varies from year to year without an apparent trend. However, when looking at the number of fatalities a downward trend can be observed. An interesting observation is that the year 2008 saw the largest increase in the total number of casualties (increase from 7616 to 9418, or 24%), but also the largest decline in road fatalities (from 335 to 274, or a decline of 18%). Overall, the number of road fatalities during the study period has decreased by 64% (from 388 in 2005 to 139 in 2018). Interestingly, the sharp increase of number of total casualties in 2008 corresponds to an increase in road traffic volume, which had been steadily rising during 2005-2008 (Source: https://www.cso.ie/en/releasesandpublications/ep/p-tranom/to2016/rtv/). 
+
+The main legislation dealing with road safety is the Road Traffic Act 1961. Some recent major changes/updates to this law in the recent years are as follows:
+
+Road Traffic Act 2006: The Gardai were given the power to breathalyse any driver stopped at a mandatory alcohol checkpoint without the need to form any opinion in relation to the driver of the vehicle.It became illegal to use a mobile phone when operating a vehicle.
+
+Road Traffic Act 2011: In October of 2011, new lower drink drive limits were introduced in Ireland.
+
+Road Traffic Act 2014: The Gardai were given the power to test the drivers' blood alcohol in case of a collision, refusal became illegal. Further, it became illegal to send or read a text message on a mobile phone while driving or use the phone for any other transactions.
+
+(Source: https://www.drinkdriversdestroylives.ie/history-of-drink-driving-legislation/ and https://www.rsa.ie/Documents/Campaigns/Mobile%20Phone/RSA_Mobile_DL.pdf)
+
+We cannot make any definitive conclusions on the effectiveness of above laws without a detailed causal analysis. But, the data shows that the rate of decrease of fatalities increases in each of the years or year following change in legislation (in 2006 the number of fatalities fell by 7% as opposed to an increase of 5% in 2005, in 2012 the number of fatalities decreased by 13% as opposed to 10% in 2011 and in 2015 the number of fatalities fell by 15% as opposed to an increase of 1% in 2014).
+
+#### Gender Profile
+
+##### Gender Analysis
+```{r}
 Male_female<-data.frame("year"=c(2005:2018),
                         "male_injured"=d_only_injured_male$value,
                         "female_injured"=d_only_injured_female$value,
@@ -211,95 +267,34 @@ lines(Male_female$year,Male_female$female_killed,col="pink",type="l")
 
 legend(2015, 6250, legend=c("Deceased Male", "Injured Male","Deceased Female", "Injured female"),
        col=c("cyan", "blue" ,"pink","magenta"), lty=1, cex=0.75)
-
 ```
 \
+The graph shows the number of men and women engaged in traffic accident resulting in casualties and fatalities. It can be seen that in every year more men get injured and die in traffic accidents. This supports the findings of World Health Organization using global data that from a young age, males are more likely to be involved in road traffic crashes than females (Source: https://www.who.int/news-room/fact-sheets/detail/road-traffic-injuries). 
+
 \
 
-#### Road user analysis
-The following graph shows the number of deaths thoughout the years (2015-2018) for all the road user types.
-```{r}
-options(width = 80)
-library(ggplot2)
-totalRoadUserData=data[data$Statistic =='All Killed and Injured Casualties (Number)' & 
-                    data$Road.User.Type != "All road users" & 
-                    data$Road.User.Type != "All Car users", ]
-totalRoadUserCasualty<-aggregate(totalRoadUserData$value, by=list(totalRoadUserData$Road.User.Type), FUN=sum)
 
-ggplot(totalRoadUserCasualty,aes(x=Group.1,y=x,fill=Group.1))+geom_bar(stat="identity")+
-  xlab("Type of road users")+ylab("no. of casualties")+theme_minimal()
+#### Age profile
 
-```
-\
-\
-This graph clearly shows that the no. of casualties for car drivers is more than any road user type category. \\\
-
----
+##### Total Casualties by Age Group during 2005-2018
 
 ```{r}
-totalRoadUserkilled = data[data$Statistic !='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users", ]
-ggplot(data=totalRoadUserkilled, aes(x=Road.User.Type, y=value, fill=Statistic), position = "fill") +
-  geom_bar(stat="identity")+
-  xlab("Type of road users")+ylab("no. of casualties")+theme_minimal()
+options(width = 2000)
+AgeGroup_All = data[data$Statistic !='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users" & data$Age.Group != "All ages", ]
+ggplot(data=AgeGroup_All, aes(x=Age.Group, y=value, fill=Statistic), position = "fill") +
+  geom_bar(stat="identity")+coord_flip()+xlab("Age Groups")+ylab("No. of Casualties")
 ```
-\this graph shows the injury to kill number of the Road user type category .
+
+\
+
+The age group 25-34 years shows highest proportions of road casualties followed by the age groups  35-44, 45-54 and 21-24.
+Alternatively the age group 65 and over shows the highest fatality ratio followed by the age groups 25-34, 35-44 and 21-24 .
+
 \
 
 ---
 
-We will dive more deeply in the stats comparing the gender of the people 
-```{r}
-car_driver<-data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"
-                 & data$Age.Group != 'All ages', ]
-
-
-car_driver<-transform(car_driver,Road.User.Type=ifelse(car_driver$Road.User.Type!="Car drivers","Others","Car drivers"))
-
-
-ggplot(car_driver,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+facet_wrap(~Sex)+geom_hline(yintercept=.5)+coord_flip()
-```
-\ This plot shows the decreasing proportion of casualties in car drivers and  also comparing male , female car drivers.\
-
----
-
-Proportion of Male and Female Car Driving Death Casualties Trend over 14 years.
-```{r}
-car_driver<-data[(data$Statistic =='Killed Casualties (Number)'|data$Statistic =='All Killed and Injured Casualties (Number)') & data$Road.User.Type == "Car drivers" & data$Age.Group == 'All ages'  , ]
-
-
-car_driver<-transform(car_driver,Road.User.Type=ifelse(car_driver$Road.User.Type=="Car drivers" & car_driver$Statistic =='Killed Casualties (Number)',"Deceased drivers","Others"))
-
-
-ggplot(car_driver,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+facet_wrap(~Sex)+geom_hline(yintercept=.95)+geom_hline(yintercept=.98)+coord_flip()
-```
-\ This plot shows the decreasing proportion of deaths in car drivers and  also comparing male , female car drivers.\
-
-
----
-
-```{r}
-options(width = 140)
-library(ggplot2)
-roadUser<-subset(data,Statistic=='All Killed and Injured Casualties (Number)' &
-                
-                  Road.User.Type!= "All road users" & 
-                  Road.User.Type != "All Car users" &
-                   Age.Group=="All ages")
-
-roadUser_normalized_data<-data.frame("year"=roadUser$Year,"UserType"=roadUser$Road.User.Type,"Sex"=roadUser$Sex,"value"=roadUser$value)
-
-
-
-ggplot(roadUser_normalized_data,aes(x=year,y=value,col=UserType,group=UserType))+
-  geom_point()+
-  geom_line()+
-  facet_wrap(.~Sex)
-
-```
-\
-\
-
-#### Age group analysis
+##### Total casualties trend for each age group by gender
 
 ```{r}
 AgeGroup<-subset(data,Statistic=='All Killed and Injured Casualties (Number)' &
@@ -316,25 +311,35 @@ ggplot(AgeGroup,aes(x=Year,y=value,col=Age.Group,group=Age.Group))+
 ```
 
 \
+The plot above shows the breakdown of age groups engaged in traffic accidents resulting in casualties over the 14 years.  This plot shows a peak in casualties with age group unknown in the year 2008 which may imply several small road accidents, high traffic volume and/or inferior weather conditions leading to high road accidents and incomplete data collection.  
 \
 
 ---
 
-Categorical Count of AGe Group WIse Casualties for 14 years.
+
+
+#### Road user analysis
+##### The following graph shows the number of deaths throughout the years (2015-2018) for all the road user types.
 
 ```{r}
-options(width = 2000)
-AgeGroup_All = data[data$Statistic !='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users" & data$Age.Group != "All ages", ]
-ggplot(data=AgeGroup_All, aes(x=Age.Group, y=value, fill=Statistic), position = "fill") +
-  geom_bar(stat="identity")+coord_flip()
+totalRoadUserkilled = data[data$Statistic !='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users", ]
+ggplot(data=totalRoadUserkilled, aes(x=Road.User.Type, y=value, fill=Statistic), position = "fill") +
+  geom_bar(stat="identity")+
+  xlab("Type of road users")+ylab("no. of casualties")+theme_minimal()
 ```
-
 \
+It can be seen in the graph above that the driver and passenger fatalities represent the vast majority of total road traffic fatalities for the period 2005-2018.It also indicates the injury to death proportion within each Road user type category. It can be seen that the highest proportion of fatalities is among the car drivers followed by pedestrians and car passengers.
 \
 
 ---
 
-Analyzing behaviour of Top 4 Casualties Counts Age Groups Based on Car DRIVING CASUALTY PROPORTION AND KILLED Car DRIVING CASUALTY PROPORTION TRENDS.
+##### Deep diving into Road User Type-Car Drivers (Highest casualty ratio)
+
+---
+
+##### Analyzing the High Risk (for Casualties) Age Groups
+\
+The feature age groups contains unbalanced age distribution. To overcome the same the age groups  15-17, 18-20 & 21-24 have been combined as age group 15-24 for analytics.
 ```{r}
 sub_cat1 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             (data$Age.Group == '15 - 17 years' | data$Age.Group == '18 - 20 years' | data$Age.Group == '21 - 24 years'), ]
@@ -366,10 +371,83 @@ figure <- ggarrange(cat1, cat2, cat3,cat4,
 figure
 ```
 \
+The graphs above show a declining trend in car driver casualty ratio for all age groups with highest rate of decrement in the age group 15- 24 years. 
+
+\
 
 ---
 
-Road User TYpe Total Casualties Proportion Trend
+
+##### Car drivers casualty poportion trend by gender  
+
+```{r}
+car_driver<-data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"
+                 & data$Age.Group != 'All ages', ]
+
+
+car_driver<-transform(car_driver,Road.User.Type=ifelse(car_driver$Road.User.Type!="Car drivers","Others","Car drivers"))
+
+
+ggplot(car_driver,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+facet_wrap(~Sex)+geom_hline(yintercept=.5)+coord_flip()
+```
+\ 
+The vertical line in both the sub-plot above show the peak car driver casualty ratio of female for ease of comparison.
+We can observe higher car driver casualty ratio for females than that of males through all the years and a decreasing trend of casualty ratio  for car drivers in both the genders.
+\
+
+---
+
+##### Car drivers fatality poportion trend by gender  
+
+```{r}
+car_driver<-data[(data$Statistic =='Killed Casualties (Number)'|data$Statistic =='All Killed and Injured Casualties (Number)') & data$Road.User.Type == "Car drivers" & data$Age.Group == 'All ages'  , ]
+
+
+car_driver<-transform(car_driver,Road.User.Type=ifelse(car_driver$Road.User.Type=="Car drivers" & car_driver$Statistic =='Killed Casualties (Number)',"Deceased drivers","Others"))
+
+
+ggplot(car_driver,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+facet_wrap(~Sex)+geom_hline(yintercept=.95)+geom_hline(yintercept=.98)+coord_flip()
+```
+\ 
+
+The 2 vertical lines in each of the sub-plots represent the peak car driver fatality ratio for each of the gender.
+As observed the fatality ratio displays a decreasing trend for both the genders. Interestingly, the female car drivers show a higher proportion of casualties, yet they have a lower fatality proportion.
+
+---
+
+
+##### Road user type casualty trend by gender - understanding impact of reducing trend in car driver casualties on overall casualties 
+
+```{r}
+options(width = 140)
+library(ggplot2)
+roadUser<-subset(data,Statistic=='All Killed and Injured Casualties (Number)' &
+                
+                  Road.User.Type!= "All road users" & 
+                  Road.User.Type != "All Car users" &
+                   Age.Group=="All ages")
+
+roadUser_normalized_data<-data.frame("year"=roadUser$Year,"UserType"=roadUser$Road.User.Type,"Sex"=roadUser$Sex,"value"=roadUser$value)
+
+
+
+ggplot(roadUser_normalized_data,aes(x=year,y=value,col=UserType,group=UserType))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(.~Sex)
+
+```
+
+\
+
+This graph shows the breakdown of total number of casualties by the road user type among the male and female categories. It can be seen that the male cyclist casualties has increased more dramatically than that of the female cyclist. The plot also indicates that the female group is less likely to end up in road casualties for every commuting method other than car passengers.
+
+\
+
+
+---
+
+##### Road User Type Total Casualties Proportion Trend
 ```{r}
 
 sub_cat1 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
@@ -421,49 +499,50 @@ figure <- ggarrange(cat1, cat2, cat3,cat4,cat5,cat6,
 figure
 ```
 \
+The graphs above shows the categories - Motor Cyclist, Pedestrians and Other Road Users have no significant increasing or decreasing trend; whereas Car Driver Casualty ratio shows a decreasing trend. Car Passenger Casualty ratio though lower in 2018 than 2005 does have a peak in the mid years. The category of Road User that stands out is the Pedal Cyclist; showing an increasing trend of Casualty Proportion.
 \
 
 ---
 
-Road User TYpe Total Casualties Proportion Trend
+Road User Type Total Fatalties Proportion Trend
 ```{r}
 
-sub_cat1 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+sub_cat1 = data[data$Statistic =='Killed Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             data$Age.Group == 'All ages' , ]
 sub_cat1<-transform(sub_cat1,Road.User.Type=ifelse(Road.User.Type!="Pedestrians","All road users",as.character(Road.User.Type)))
 sub_cat1$Road.User.Type=factor(sub_cat1$Road.User.Type)
 sub_cat1 <- aggregate(value~Road.User.Type+Year, sub_cat1, sum)
 cat1<-ggplot(sub_cat1,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Pedestrians casualty proportion trend")+coord_flip()
 
-sub_cat2 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+sub_cat2 = data[data$Statistic =='Killed Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             data$Age.Group == 'All ages' , ]
 sub_cat2<-transform(sub_cat2,Road.User.Type=ifelse(Road.User.Type!="Pedal cyclists","All road users",as.character(Road.User.Type)))
 sub_cat2$Road.User.Type=factor(sub_cat2$Road.User.Type)
 sub_cat2 <- aggregate(value~Road.User.Type+Year, sub_cat2, sum)
 cat2<-ggplot(sub_cat2,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Pedal cyclists casualty proportion trend")+coord_flip()
 
-sub_cat3 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+sub_cat3 = data[data$Statistic =='Killed Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             data$Age.Group == 'All ages' , ]
 sub_cat3<-transform(sub_cat3,Road.User.Type=ifelse(Road.User.Type!="Motor cyclists","All road users",as.character(Road.User.Type)))
 sub_cat3$Road.User.Type=factor(sub_cat3$Road.User.Type)
 sub_cat3 <- aggregate(value~Road.User.Type+Year, sub_cat3, sum)
 cat3<-ggplot(sub_cat3,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Motor cyclists casualty proportion trend")+coord_flip()
   
-sub_cat4 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+sub_cat4 = data[data$Statistic =='Killed Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             data$Age.Group == 'All ages' , ]
 sub_cat4<-transform(sub_cat4,Road.User.Type=ifelse(Road.User.Type!="Car drivers","All road users",as.character(Road.User.Type)))
 sub_cat4$Road.User.Type=factor(sub_cat4$Road.User.Type)
 sub_cat4 <- aggregate(value~Road.User.Type+Year, sub_cat4, sum)
 cat4<-ggplot(sub_cat4,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Car drivers casualty proportion trend")+coord_flip()
 
-sub_cat5 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+sub_cat5 = data[data$Statistic =='Killed Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             data$Age.Group == 'All ages' , ]
 sub_cat5<-transform(sub_cat5,Road.User.Type=ifelse(Road.User.Type!='Car passengers' ,"All road users",as.character(Road.User.Type)))
 sub_cat5$Road.User.Type=factor(sub_cat5$Road.User.Type)
 sub_cat5 <- aggregate(value~Road.User.Type+Year, sub_cat5, sum)
 cat5<-ggplot(sub_cat5,aes(x=Year,y=value,fill=Road.User.Type))+geom_bar(position="fill",stat="identity")+ggtitle("Car passengers casualty proportion trend")+coord_flip()
 
-sub_cat6 = data[data$Statistic =='All Killed and Injured Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
+sub_cat6 = data[data$Statistic =='Killed Casualties (Number)' & data$Road.User.Type != "All road users" & data$Road.User.Type != "All Car users"  &
             data$Age.Group == 'All ages' , ]
 sub_cat6<-transform(sub_cat6,Road.User.Type=ifelse(Road.User.Type!="Other road users","All road users",as.character(Road.User.Type)))
 sub_cat6$Road.User.Type=factor(sub_cat6$Road.User.Type)
@@ -476,6 +555,21 @@ figure <- ggarrange(cat1, cat2, cat3,cat4,cat5,cat6,
                     ncol = 2, nrow = 3)
 figure
 ```
+\
+The Fatality ratio trend for each of the Road User Type shows no significant increment or decrement. Pedal Cyclists Category have the least proportion of fatalities among all other categories, even though it is the only Road User Type showing a significant increasing trend of road casualties over the years which is shown in data collected by the CSO in the The National Travel Survey which shows an increase in cycle usage from 4% in 2009 to 15% in 2019 (https://www.cso.ie/en/releasesandpublications/ep/p-nts/nationaltravelsurvey2019/cycling/).
+
+\
+
+
+---
 
 
 ### Summary
+\
+Road related accidents though a part of our daily lives either as a bystander or a participant is an underestimated phenomenon of our society. It is critical to understand the underlying pattern of the trends of such data to make our roads safer for everyone. The depth of exploration into this casualty data-set shed light on various factors affecting the counts of injuries and fatalities due to road accidents. The trends of casualties have even been tried to be mapped on Traffic Regulation changes to derive a reasonable explanation of the significant reduction (-64%) in Fatality Count from the year 2005 (388) to 2018 (139).
+\
+The Data clearly shows a decreasing trend in road user casualty ratio for the category with the highest overall casualty ratio - Car Drivers (42%) implying the increasing awareness of the society. It also shows an increasing trend in the casualty proportion for the Pedal Cyclists which can imply an increase in irresponsible pedal cyclists or as one would rather like to imagine - a possible increase in usage of Pedal Cycles. This transition in choice of mode of transport has contributed significantly in controlling fatal road incidents.
+\
+The inferences can be further drilled down to understand the phenomenon deeper given more data features such as number of road users for each road user type, severity type of injuries and even including other domains of data such weather information, road infrastructure (street lights information, spatial road network data, traffic signals/junctions/roadblocks).
+
+---
